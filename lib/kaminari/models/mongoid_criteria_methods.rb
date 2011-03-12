@@ -10,8 +10,12 @@ module Kaminari
         options[:skip]
       end
 
-      def total_count #:nodoc:
-        count
+      def total_count
+        if self.klass.max_count_results
+          limit(self.klass.max_count_results).count(true)
+        else
+          count
+        end
       end
     end
   end

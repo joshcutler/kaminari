@@ -8,9 +8,27 @@ describe Kaminari::MongoidExtension do
       include ::Mongoid::Document
       field :salary, :type => Integer
     end
+    
+    class DeveloperWithCountLimit
+      include ::Mongoid::Document
+      field :salary, :type => Integer
+      limit_max_count_results_to(10)
+    end
   end
+  
   before do
     stub(subject).count { 300 } # in order to avoid DB access...
+  end
+  
+  describe 'limit_max_count_results_to #' do
+    before do
+      stub(subject).count { 10 } # in order to avoid DB access...
+    end
+    
+    context "page 1" do
+      subject { DeveloperWithCountLimit.page 1 } 
+      its(:total_count) { should == 10 }
+    end
   end
 
   describe '#page' do

@@ -15,6 +15,18 @@ module Kaminari
       def default_per_page
         @_default_per_page || Kaminari::DEFAULT_PER_PAGE
       end
+      
+      # Adds a limiting method for Classes
+      # class Article
+      #   limit_max_count_results_to(10) #limits the most results returned to 100
+      # end
+      def limit_max_count_results_to(val)
+        @_default_max_count_results = val
+      end
+      
+      def max_count_results
+        @_default_max_count_results
+      end
     end
   end
 end
