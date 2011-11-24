@@ -10,11 +10,19 @@ module Kaminari
         options[:skip]
       end
 
-      def total_count
+      def total_count #:nodoc:
         if self.klass.max_count_results
           limit(self.klass.max_count_results).count(true)
         else
-          count
+          embedded? ? unpage.count : count
+        end
+      end
+
+      private
+      def unpage
+        clone.tap do |crit|
+          crit.options.delete :limit
+          crit.options.delete :skip
         end
       end
     end

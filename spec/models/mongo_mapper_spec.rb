@@ -1,18 +1,21 @@
 require File.expand_path('../spec_helper', File.dirname(__FILE__))
 require 'mongo_mapper'
-require File.expand_path('../../lib/kaminari/models/mongo_mapper_extension', File.dirname(__FILE__))
+require 'kaminari/models/mongo_mapper_extension'
 
 describe Kaminari::MongoMapperExtension do
-  before :all do
-    MongoMapper.connection = Mongo::Connection.new('localhost', 27017)
-    MongoMapper.database = "kaminari_test"
-    class Developer
-      include ::MongoMapper::Document
-      key :salary, Integer
-    end
-  end
   before do
-    stub(subject).count { 300 } # in order to avoid DB access...
+    begin
+      MongoMapper.connection = Mongo::Connection.new('localhost', 27017)
+      MongoMapper.database = "kaminari_test"
+      class Developer
+        include ::MongoMapper::Document
+        key :salary, Integer
+      end
+
+      stub(subject).count { 300 } # in order to avoid DB access...
+    rescue Mongo::ConnectionFailure
+      pending 'can not connect to MongoDB'
+    end
   end
 
   describe '#page' do
@@ -33,7 +36,7 @@ describe Kaminari::MongoMapperExtension do
       its(:num_pages) { should == 12 }
       it { should skip 25 }
     end
-    
+
     context 'page "foobar"' do
       subject { Developer.page 'foobar' }
       it { should be_a Plucky::Query }
@@ -42,31 +45,30 @@ describe Kaminari::MongoMapperExtension do
       its(:num_pages) { should == 12 }
       it { should skip 0 }
     end
-    
+
     context 'with criteria before' do
       it "should have the proper criteria source" do
         Developer.where(:salary => 1).page(2).criteria.source.should == {:salary => 1}
       end
-      
+
       subject { Developer.where(:salary => 1).page 2 }
       its(:current_page) { should == 2 }
       its(:limit_value) { should == 25 }
       its(:num_pages) { should == 12 }
       it { should skip 25 }
     end
-    
+
     context 'with criteria after' do
       it "should have the proper criteria source" do
         Developer.where(:salary => 1).page(2).criteria.source.should == {:salary => 1}
       end
-      
+
       subject { Developer.page(2).where(:salary => 1) }
       its(:current_page) { should == 2 }
       its(:limit_value) { should == 25 }
       its(:num_pages) { should == 12 }
       it { should skip 25 }
     end
-
   end
 
   describe '#per' do
