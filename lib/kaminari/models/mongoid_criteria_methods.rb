@@ -12,7 +12,7 @@ module Kaminari
 
       def total_count #:nodoc:
         if self.klass.max_count_results
-          limit(self.klass.max_count_results).count(true)
+          limit(self.klass.max_count_results).offset(0).count(true)
         else
           embedded? ? unpage.count : count
         end
